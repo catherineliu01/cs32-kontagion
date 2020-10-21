@@ -1,0 +1,323 @@
+1. A high-level description of each of your public member functions in each of
+your classes, and why you chose to define each member function in its host class; also explain why (or why not) you decided to make each function
+virtual or pure virtual. 
+ 
+>> ACTOR << 
+
+>> virtual void doSomething() = 0;
+Every tick, StudentWorld's move() function calls doSomething() for each Actor in its list of actors. Each Actor's doSomething() allows it to perform some specialized activity. This function is virtual because every Actor in Kontagion calls doSomething() to perform some activity and these activities are different for each Actor. This function is pure virtual because there is no "default" activity that a generic Actor performs.
+
+>> StudentWorld* getWorld() const;
+This function returns a pointer to the StudentWorld that the Actor exists in. This allows the Actor to influence the StudentWorld (e.g., add a new Actor to the container of Actors). This function is not virtual because the task it performs remains the same for each derived class of Actor. 
+
+>> bool isAlive() const;
+This function returns true if the Actor is alive, and false if it is dead. The game needs to know whether Actors are alive or dead; dead Actors do not perform any actions & must disappear from the screen, etc. This function is not virtual because the task it performs remains the same for each derived class of Actor. 
+
+>> void setDead()
+This function sets the Actor's m_isAlive status to false, rendering it dead. This function was defined here as to update the status of the Actor when some activity "kills" it. This function is not virtual because the task it performs remains the same for each derived class of Actor. 
+
+>> bool checkOverlap(Actor* a);
+This function checks whether the Actor overlaps with another Actor (second definition of overlap). This function was defined here as certain events are dependent on Actors overlapping.  This function is not virtual because the task it performs remains the same for each derived class of Actor. 
+ 
+>> virtual bool isDamageable() const;
+This function checks whether the Actor can be damaged by projectiles. This function was defined here as gameplay depends on interaction between projectiles and other Actors; if the target Actor is damageable, then the projectile should kill it. This function is virtual; it returns false on definition in the Actor superclass, but derived classes differ on whether or not they are damageable. 
+
+>> virtual bool isObstacle() const;
+This function checks whether the Actor can block bacterial movement (is an obstacle). This function was defined here as gameplay depends on interaction between bacteria and other Actors; if the target Actor is an obstacle, then bacterial movement changes upon interaction with it. This function is virtual; it returns false on definition in the Actor superclass, but derived classes differ on whether or not they are obstacles.
+
+>> virtual bool isEdible() const;
+This function checks whether the Actor is edible (can be eaten by bacteria). This function was defined here as gameplay depends on interaction between bacteria and edible Actors; if the target Actor is edible, then the bacteria should eat it upon interaction with it. This function is virtual; it returns false on definition in the Actor superclass, but derived classes differ on whether or not they are edible.
+
+>> virtual bool preventsLevelCompleting() const;
+This function checks whether the presence of an Actor prevents the level from completing. This function was defined here as gameplay depends on whether or not these Actors are present in the StudentWorld; if they are not, then the game proceeds to the next level. This function is virtual; it returns false on definition in the Actor superclass, but derived classes differ on whether or not they prevent the level from completing by their existence.
+
+>> virtual void incurDamage(int damage);
+This function makes the Actor take (int damage) amount of damage. This function was defined here as the game needs some way to track the health status of each Actor. This function is virtual as some Actors do not have HP and die upon taking any amount of damage, while others (Socrates, Bacteria) do have HP. 
+
+>> AGENT << 
+
+>> void setHP(int newHP);
+This function sets the Agent's HP to (int newHP). This function was defined in Agent as all Agents have m_hp (although not all Actors do) and derived classes of Agent need some way to update their HP. This function is not virtual because its functionality remains the same between all of Agent's derived classes.
+
+>> int getHP() const;
+This function returns the Agent's HP value. This function was defined in Agent as all Agents have m_hp (although not all Actors do) and derived classes of Agent need some way to access their HP. This function is not virtual because its functionality remains the same between all of Agent's derived classes.
+
+>> virtual void incurDamage(int damage);
+This function makes the Agent's HP decrease by (int damage) amount. This function was (re)defined here as Agents have HP and upon taking damage lose HP, which is an action common to all Agents but not to all Actors. This function is virtual as some Actors do not have HP and die upon taking any amount of damage, while others (Agents) do have HP. 
+
+>> virtual void hurt() = 0;
+This function defines specific behavior that occurs when an Agent takes damage. This function was defined here because all Agents exhibit some behavior upon taking damage. This function is virtual as different Agents exhibit different behavior (different sounds are played) upon taking damage. This function is pure virtual because there is no "default" activity that a generic Agent performs. 
+
+>> SOCRATES << 
+
+>> virtual void doSomething();
+This function checks for user key input. It performs different tasks (fires the disinfectant spray gun, uses the flamethrower, moves clockwise/counterclockwise) depending on the user key input. If there is no user key input, then the function replenishes Socrates' spray gun. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> void addFlameCharges(int charges);
+This function adds (int charges) number of charges to Socrates' flamethrower. This function is defined here because events can occur (i.e., Socrates interacts with Flamethrower Goodie) which grant Socrates more flame charges. This function is not virtual because Socrates has no derived classes.
+
+>> int getFlameChargeCount() const;
+This function returns the number of flame charges left in Socrates' flamethrower. This function is defined here because StudentWorld needs to display this number in the stats menu and so it needs to be able to access a private member m_flameCharges. This function is not virtual because Socrates has no derived classes.
+
+>> int getSprayChargeCount() const;
+This function returns the number of spray charges left in Socrates' spray gun. This function is defined here because StudentWorld needs to display this number in the stats menu and so it needs to be able to access a private member m_sprayCharges. This function is not virtual because Socrates has no derived classes.
+
+>> virtual void hurt();
+This function checks whether Socrates' health is above zero after taking damage. If it is below zero, then it kills Socrates. This function is defined here as a redefinition of Agent's hurt(). This function is virtual because upon an Agent taking damage, different sounds are played depending on the Agent. 
+
+>> BACTERIUM << 
+
+>> virtual bool isDamageable() const;
+This function returns true, as Bacteria can be damaged by projectiles. This function is defined here as a redefinition of Actor's isDamageable() specific to Bacteria. This function is virtual as derived classes of the Actor superclass differ on whether or not they are damageable.
+
+>> virtual void doSomething();
+This function executes the tasks common to all Bacteria: it attempts to eat food & reproduce. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> int getDamage() const;
+This function returns the Bacterium's m_damage value (i.e., how much damage it deals). This function was defined in Bacterium as all Bacteria deal damage and derived classes of Bacterium need some way to access their damage value. This function is not virtual because its functionality remains the same between all of Bacterium's derived classes.
+
+>> virtual Bacterium* specializedSpawn(double x, double y) = 0;
+This function returns a pointer to a new Bacterium (spawns a new Bacterium). This function is defined in Bacterium as all derived classes of Bacterium can spawn new Bacteria. This function is virtual because each subclass of Bacterium spawns a different type of Bacterium upon calling the function. This function is pure virtual as there is no "standard" Bacterium to be generated.
+
+>> void setMovePlan(int newPlan);
+This function sets the Bacterium's move plan distance to (int newPlan). This function is defined here as subclasses of Bacterium need to be able to change their move plan distance values. This function is not virtual because its functionality remains the same between all of Bacterium's derived classes.
+
+>> int getMovePlan() const;
+This function returns the Bacterium's current move plan distance. This function is defined here as subclasses of Bacterium need to be able to access their move plan distance values. This function is not virtual because its functionality remains the same between all of Bacterium's derived classes.
+
+>> virtual bool preventsLevelCompleting() const;
+This function returns true as the presence of a Bacterium prevents the level from completing. This function was defined here as a redefinition of Actor's preventsLevelCompleting(). This function is virtual as derived classes of Actor differ on whether or not they prevent the level from completing by their existence.
+
+>> SALMONELLA << 
+
+>> virtual void hurt();
+This function checks whether the Salmonella's health is above zero after taking damage. If it is below zero, then it kills the Salmonella. This function is defined here as a redefinition of Agent's hurt(). This function is virtual because upon an Agent taking damage, different sounds are played depending on the Agent. 
+
+>> virtual void doSomething();
+This function executes the tasks common to all Salmonella: it tries to move in the current direction if move plan distance is greater than zero. Otherwise, it locates the nearest food within a certain radius and attempts to move in that direction. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> REGULARSALMONELLA << 
+
+>> virtual Bacterium* specializedSpawn(double x, double y);
+This function returns a pointer to a new RegularSalmonella(spawns a new RegularSalmonella). This function is defined here as a redefinition of Bacterium's specializedSpawn(). This function is virtual because each subclass of Bacterium spawns a different type of Bacterium upon calling the function.
+
+>> virtual void doSomething();
+This function executes RegularSalmonella-specific tasks. Since RegularSalmonella do not have any specialized tasks, it simply calls Bacterium and Salmonella's doSomething() functions. This function is defined here as a redefinition of Bacterium's doSomething(). This function is virtual because it performs a specialized task.
+
+>> AGGRESSIVESALMONELLA << 
+
+>> virtual Bacterium* specializedSpawn(double x, double y);
+This function returns a pointer to a new AggressiveSalmonella(spawns a new AggressiveSalmonella). This function is defined here as a redefinition of Bacterium's specializedSpawn(). This function is virtual because each subclass of Bacterium spawns a different type of Bacterium upon calling the function.
+
+>> virtual void doSomething();
+This function executes AggressiveSalmonella-specific tasks. If Socrates is nearby, it attempts to move in the direction toward him. The function then calls Bacterium and Salmonella's doSomething() functions. This function is defined here as a redefinition of Bacterium's doSomething(). This function is virtual because it performs a specialized task.
+
+>> ECOLI <<
+
+>> virtual void hurt();
+This function checks whether the EColi's health is above zero after taking damage. If it is below zero, then it kills the EColi. This function is defined here as a redefinition of Agent's hurt(). This function is virtual because upon an Agent taking damage, different sounds are played depending on the Agent. 
+
+>> virtual void doSomething();
+This function executes EColi-specific tasks. It first calls Bacterium's doSomething(). Then, if Socrates is nearby, it attempts to move in the direction toward him. This function is defined here as a redefinition of Bacterium's doSomething(). This function is virtual because it performs a specialized task.
+
+>> virtual Bacterium* specializedSpawn(double x, double y);
+This function returns a pointer to a new EColi(spawns a new EColi). This function is defined here as a redefinition of Bacterium's specializedSpawn(). This function is virtual because each subclass of Bacterium spawns a different type of Bacterium upon calling the function.
+
+>> ACTIVATINGOBJECT << 
+
+>> void decrementLifetime();
+This function decrements ActivatingObject's m_lifetime value. This function is defined here as ActivatingObjects expire after their lifetime reaches zero, so it needs a way to decrease its lifetime with every tick. This function is not virtual because its functionality remains the same between all of Bacterium's derived classes.
+
+>> int getLifetime() const;
+This function returns ActivatingObject's remaining lifetime. This function is defined here because as ActivatingObjects expire after their lifetime reaches zero, ActivatingObject needs a way to track its remaining lifetime. This function is not virtual because its functionality remains the same between all of Bacterium's derived classes.
+
+>> FOOD << 
+
+>> virtual void doSomething();
+This function executes Food-specific tasks. Since Food doesn't do anything, it simply returns. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> virtual bool isEdible() const; 
+This function returns true as Food is edible (can be eaten by bacteria). This function was defined here as a redefinition of Actor's isEdible() function. This function is virtual as Actor's derived classes differ on whether or not they are edible.
+
+>> PROJECTILE << 
+
+>> virtual void doSomething();
+This function executes Projectile-specific tasks. It checks to see if it has hit a damageable target; it moves; its lifetime decreases. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> int getDamage() const;
+This function returns the Bacterium's m_damage value (i.e., how much damage it deals). This function was defined in Projectile as all Projectiles deal damage and derived classes of Projectile need some way to access their damage value. This function is not virtual because its functionality remains the same between all of Projectile's derived classes.
+
+>> GOODIE << 
+
+>> virtual bool isDamageable() const;
+This function returns true, as Goodies can be damaged by projectiles. This function is defined here as a redefinition of Actor's isDamageable() specific to Bacteria. This function is virtual as derived classes of the Actor superclass differ on whether or not they are damageable.
+
+>> void pickUp(Socrates* s);
+This function details what occurs when a Socrates object picks up the Goodie. It increases the score, it kills the Goodie, and it calls specificGoodiePerk(). This function is defined here as gameplay is dependent on what occurs when Socrates interacts with a Goodie. This function is not virtual because its functionality remains the same between all of Projectile's derived classes.
+
+>> virtual void specificGoodiePerk(Socrates* s) = 0;
+This function details what occurs when a specific Goodie (i.e., subclass of Goodie) is picked up. This function is defined here as all subclasses of Goodie have a specific Goodie perk. This function is virtual as derived classes of Goodie have different perks. This class is pure virtual as a generic Goodie does not have a perk.
+
+>> int getPoints() const;
+This function returns the Goodie's m_points value (i.e., how many points it gives when it is picked up). This function was defined in Goodie as all Goodies have points and derived classes of Goodie need some way to access their point value. This function is not virtual because its functionality remains the same between all of Goodie's derived classes.
+
+>> virtual void doSomething();
+This function executes Goodie-specific tasks. It checks to see if Socrates has picked up the Goodie, and it decrements the lifetime. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> RESTOREHEALTHGOODIE << 
+
+>> virtual void specificGoodiePerk(Socrates* s);
+This function details what occurs when a RestoreHealthGoodie is picked up: it increases Socrates' HP. This function is defined here as a redefinition of Goodie's specificGoodiePerk(). This function is virtual as derived classes of Goodie have different perks. 
+
+>> FLAMETHROWERGOODIE << 
+
+>> virtual void specificGoodiePerk(Socrates* s);
+This function details what occurs when a Flamethrower Goodie is picked up: it increases Socrates' flame charges. This function is defined here as a redefinition of Goodie's specificGoodiePerk(). This function is virtual as derived classes of Goodie have different perks. 
+
+>> EXTRALIFEGOODIE << 
+
+>> virtual void specificGoodiePerk(Socrates* s);
+This function details what occurs when an ExtraLifeGoodie is picked up: it gives Socrates another life. This function is defined here as a redefinition of Goodie's specificGoodiePerk(). This function is virtual as derived classes of Goodie have different perks. 
+
+>> FUNGUS << 
+
+>> virtual void specificGoodiePerk(Socrates* s);
+This function details what occurs when a Fungus is picked up: it deals damage to Socrates. This function is defined here as a redefinition of Goodie's specificGoodiePerk(). This function is virtual as derived classes of Goodie have different perks. 
+
+>> DIRT << 
+
+>> virtual void doSomething();
+This function executes Dirt-specific tasks. Since Dirt doesn't do anything, it simply returns. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> virtual bool isDamageable() const;
+This function returns true, as Dirt can be damaged by projectiles. This function is defined here as a redefinition of Actor's isDamageable() function. This function is virtual as derived classes of the Actor superclass differ on whether or not they are damageable.
+
+>> virtual bool isObstacle() const;
+This function returns true, as Dirt can block movement. This function is defined here as a redefinition of Actor's isObstacle() function. This function is virtual as derived classes of the Actor superclass differ on whether or not they are obstacles.
+
+>> PIT << 
+
+>> virtual void doSomething();
+This function executes Pit-specific tasks. It checks whether its inventory is empty. If it is, then it kills the Pit. If it's not, then it spawns Bacteria based on a random spawn chance until the Pit is empty. This function is defined here as a redefinition of Actor's doSomething(). This function is virtual because it performs a specialized task.
+
+>> virtual bool preventsLevelCompleting() const;
+This function returns true as the presence of a Pit prevents the level from completing. This function was defined here as a redefinition of Actor's preventsLevelCompleting(). This function is virtual as derived classes of Actor differ on whether or not they prevent the level from completing by their existence.
+
+>> STUDENTWORLD <<
+
+>> virtual int init();
+This function operates according to the spec.
+
+>> virtual int move();
+This function operates according to the spec.
+
+>> virtual void cleanUp();
+This function operates according to the spec.
+
+>> void addActor(Actor* a);
+This function adds a pointer to an Actor to StudentWorld's list of pointers to Actors. This function is defined here as StudentWorld needs a way to add new Actors to the game. This function is not virtual because StudentWorld has no derived classes.
+
+>> bool inflictDamage(Projectile* src);
+This function inflicts projectile damage on all damageable Actors in the list of pointers to Actors if they collide with a projectile. This function is defined here as StudentWorld controls interactions between Actors in its list of Actors; individual Actors have no knowledge of other Actors in the StudentWorld. This function is not virtual because StudentWorld has no derived classes.
+
+>> bool checkOverlap(double x1, double x2, double y1, double y2);
+This function checks whether an Actor at position (x1, y1) overlaps with another Actor at position (x2, y2) (second definition of overlap). This function was defined here as certain events are dependent on Actors overlapping. Although Actor also has its own definition of checkOverlap, certain events (e.g., Bacterium movement) are dependent on whether a projected (x, y) position will overlap with any obstacles, in which case this definition is more useful. It is defined here instead of in Actor because only StudentWorld contains information about different Actors in its list of Actors. This function is not virtual because StudentWorld has no derived classes.
+ 
+>> bool pickUpGoodie(Goodie* src);
+This function checks whether Socrates overlaps with a Goodie; in which case it calls the Goodie's pickUp() function to make Socrates pick it up. This function is defined here as only StudentWorld carries information about multiple Actors (in this case Socrates and the Goodie in question). This function is not virtual because StudentWorld has no derived classes.
+
+>> bool damageSocrates(Bacterium* src);
+This function checks whether Socrates overlaps with a Bacterium; in which case it calls Socrates' incurDamage() function to make Socrates take damage. This function is defined here as only StudentWorld carries information about multiple Actors (in this case Socrates and the Bacterium in question). This function is not virtual because StudentWorld has no derived classes.
+
+>> bool blockMovement(double x, double y);
+This function determines whether an Actor at position (double x, double y) has its movement blocked. This function is defined here as only StudentWorld carries information about multiple Actors (in this case all obstacle objects in its list of Actors). This function is not virtual because StudentWorld has no derived classes.
+
+>> int locateFood(double x, double y);
+This function returns the direction to the closest edible object to an Actor at position (double x, double y). This function is defined here as only StudentWorld carries information about multiple Actors (in this case all edible objects in its list of Actors). This function is not virtual because StudentWorld has no derived classes.
+
+>> int locateSocrates(double x, double y, int detectionBound);
+This function returns the direction from an Actor at position (double x, double y) to Socrates if the distance between them is within int detectionBound. This function is defined here as only StudentWorld carries information about multiple Actors (in this case the Actor at position (x, y) and Socrates). This function is not virtual because StudentWorld has no derived classes.
+
+>> bool eatFood(Bacterium* src);
+This function checks whether a Bacterium overlaps with an edible Actor; in which case it kills the edible Actor. This function is defined here as only StudentWorld carries information about multiple Actors (in this case the Bacterium in question and all edible objects in the list of Actors). This function is not virtual because StudentWorld has no derived classes.
+
+2. A list of all functionality that you failed to finish as well as known bugs in your classes, e.g. “I didn’t implement the Flame class.” or “My aggressive salmonella doesn’t work correctly yet so I treat it like a regular salmonella right now.”
+
+I don't know of any failed functionality/bugs in my code. 
+
+3. A list of other design decisions and assumptions you made; e.g., “It was not specified what to do in situation X, so this is what I decided to do.”
+
+i. I set StudentWorld's m_player member to nullptr upon construction of the class. 
+ii. In StudentWorld's locateFood() and locateSocrates() functions, I returned -1 if no edible objects/Socrates were not found.
+iii. I decided to use a list for StudentWorld's container of Actors.
+iv. I implemented a function that returns a pointer to StudentWorld in the Actor class.
+v. I chose not to implement a function that would return a pointer to Socrates in the StudentWorld class.
+vi. I chose to give Agents an HP attribute; other Actors do not have HP.
+vii. I chose to implement a Projectile class which is a subclass of ActivatingObject and a superclass of Flame and Spray.
+
+4. A description of how you tested each of your classes (1-2 paragraphs per class).
+
+>> ACTOR << 
+Since the Actor class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Actor's subclasses.
+
+>> AGENT << 
+Since the Agent class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Actor's subclasses.
+
+>> SOCRATES << 
+I tested Socrates' movement by printing out (x,y) values every time he moved to make sure that his movement was correct. I tested his flame and spray charges by iterating through the game tick by tick using the 'f' command. Every time he fired a weapon I would print the corresponding charge count to check if it was decrementing correctly.
+
+>> BACTERIUM << 
+Since the Bacterium class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Actor's subclasses.
+
+>> SALMONELLA << 
+Since the Salmonella class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Salmonella's subclasses.
+
+>> REGULARSALMONELLA << 
+I tested the RegularSalmonella class by comparing its behavior to the example game. I spawned large numbers of Food into the game to see if the RegularSalmonella was reproducing correctly. I removed the other Bacteria from the Pit inventory so that the Pit only spawned RegularSalmonella and watched their behavior. I spawned a single RegularSalmonella into the game and observed that it behaved according to the spec and interacted correctly w/ other Actors (i.e., movement blocked by dirt, eats Food, damaged by projectiles).
+
+>> AGGRESSIVESALMONELLA << 
+I tested the AggressiveSalmonella class by comparing its behavior to the example game. I spawned large numbers of Food into the game to see if the AggressiveSalmonella was reproducing correctly. I removed the other Bacteria from the Pit inventory so that the Pit only spawned AggressiveSalmonella and watched their behavior, making sure that within the given distance (72 units) they would follow Socrates. I spawned a single AggressiveSalmonella into the game and observed that it behaved according to the spec and interacted correctly w/ other Actors (i.e., movement blocked by dirt, eats Food, damaged by projectiles). 
+
+>> ECOLI << 
+I tested the EColi class by comparing its behavior to the example game. I spawned large numbers of Food into the game to see if the EColi was reproducing correctly. I removed the other Bacteria from the Pit inventory so that the Pit only spawned EColi and watched their behavior, making sure that within the given distance (the entirety of the petri dish) they would follow Socrates. I spawned a single EColi into the game and observed that it behaved according to the spec and interacted correctly w/ other Actors (i.e., movement blocked by dirt, eats Food, damaged by projectiles). 
+
+>> ACTIVATINGOBJECT << 
+Since the ActivatingObject class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Actor's subclasses.
+
+>> FOOD << 
+Since Food doesn't do anything, I tested it by making sure that it doesn't block movement or take damage from projectiles/bacteria. 
+
+>> PROJECTILE << 
+I tested the Projectile class by iterating through the game tick by tick using the 'f' key to ensure that the corresponding Spray/Flame dissipated after the given number of ticks. I made sure that when the Projectile overlapped with a damageable object, the object would disappear (i.e., die). 
+
+>> SPRAY << 
+This class has no public member functions.
+
+>> FLAME << 
+This class has no public member functions.
+
+>> GOODIE << 
+Since the Goodie class is an ABC, I tested it through implementing its derived classes. I made sure that any data members were properly initialized and took note of any virtual functions so that I could test them in Actor's subclasses.
+
+>> RESTOREHEALTHGOODIE << 
+I tested this class by spawning RestoreHealthGoodies at locations around the perimeter of the petri dish and checking that they interacted correctly with Socrates (i.e., his score went up correctly, his health went up, the Goodie died after it was picked up). I checked to see that they would die when overlapping with a projectile. 
+
+>> FLAMETHROWERGOODIE << 
+I tested this class by spawning FlamethrowerGoodies at locations around the perimeter of the petri dish and checking that they interacted correctly with Socrates (i.e., his score went up correctly, his flame charges went up by one, the Goodie died after it was picked up). I checked to see that they would die when overlapping with a projectile. 
+
+>> EXTRALIFEGOODIE << 
+I tested this class by spawning ExtraLifeGoodies at locations around the perimeter of the petri dish and checking that they interacted correctly with Socrates (i.e., his score went up correctly, his lives went up by one, the Goodie died after it was picked up). I checked to see that they would die when overlapping with a projectile. 
+
+>> FUNGUS << 
+I tested this class by spawning Fungi at locations around the perimeter of the petri dish and checking that they interacted correctly with Socrates (i.e., his score went up correctly, his health went down, the Goodie died after it was picked up). I checked to see that they would die when overlapping with a projectile. 
+
+>> DIRT << 
+I tested this class by spawning large amounts of dirt and checking that they would obstruct bacterial movement and that they would die when hit by a projectile.
+
+>> PIT << 
+I tested this class by counting the number of bacteria spawned and making sure that it corresponded to the numbers in the Pit inventory. I checked that a Pit could not be damaged by projectiles and it did not block bacterial movement. I checked that the Pit would die when all its bacteria finished spawning.
+
+>> STUDENTWORLD << 
+I tested this class mostly by running the game repeatedly through different scenarios.
+I tested the init() function by changing int foodCount/dirtCount to a small number and checking to see that the right number of Food/Dirt objects spawned. (Because there is only one Pit in level 1, that was easy to check). I then changed foodCount/dirtCount to large numbers and checked to see that Food and Dirt (and Pit) objects did not overlap. 
+I made the move() function immediately return GWSTATUS_FINISH_LEVEL and GWSTATUS_PLAYER_DIED to check the the cleanup() function worked correctly to delete all pointers in the list of Actors. 
